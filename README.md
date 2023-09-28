@@ -1,4 +1,4 @@
-#Lab: Salmon Cookies Pt. 2
+# Lab: Salmon Cookies Pt. 2
 Problem Domain
 Pat’s Salmon Cookies problem domain can be found here!
 
