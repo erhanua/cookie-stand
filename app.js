@@ -15,15 +15,15 @@ const hours = [
   "7pm",
 ];
 
-// get the table from the HTML so we can add rows
 const table = document.getElementById("salesData");
+const trafficControlCurve = [
+  0.5, 0.75, 1.0, 0.6, 0.8, 1.0, 0.7, 0.4, 0.6, 0.9, 0.7, 0.5, 0.3, 0.4, 0.6,
+];
 
-// give a random number between two numbers
 function randomNumber(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// CookieStore Factory. It makes CookieStore objects
 function CookieStore(location, minCust, maxCust, average) {
   this.location = location;
   this.minCust = minCust;
@@ -32,8 +32,92 @@ function CookieStore(location, minCust, maxCust, average) {
   this.customersPerHour = [];
   this.cookiesPerHour = [];
   this.totalCookieSold = 0;
+  this.staffPerHour = [];
 }
 
+CookieStore.prototype.calculateSales = function () {
+  for (let i = 0; i < hours.length; i++) {
+    const hourCustomers = Math.floor(
+      randomNumber(this.minCust, this.maxCust) * trafficControlCurve[i]
+    );
+    this.customersPerHour.push(hourCustomers);
+    const hourCookiesSold = Math.floor(hourCustomers * this.avgCookiesPerCust);
+    this.cookiesPerHour.push(hourCookiesSold);
+    this.totalCookieSold += hourCookiesSold;
+
+    // Calculate staff needed for this hour
+    const tossersNeeded = Math.ceil(hourCustomers / 20);
+    this.staffPerHour.push(Math.max(tossersNeeded, 2)); // Ensure a minimum of 2 tossers
+  }
+};
+
+CookieStore.prototype.render = function () {
+  const tr = document.createElement("tr");
+  const th = document.createElement("th");
+  th.textContent = this.location;
+  tr.appendChild(th);
+
+  // Add cookies per hour to the table
+  this.cookiesPerHour.forEach((cookieCount) => {
+    const td = document.createElement("td");
+    td.textContent = cookieCount;
+    tr.appendChild(td);
+  });
+
+  // Add total cookies sold to the table
+  const totalTd = document.createElement("td");
+  totalTd.textContent = this.totalCookieSold;
+  tr.appendChild(totalTd);
+
+  // Add the row to the table
+  table.appendChild(tr);
+
+  // Render staff required
+  const staffTr = document.createElement("tr");
+  const staffTh = document.createElement("th");
+  staffTh.textContent = this.location + " Staff";
+  staffTr.appendChild(staffTh);
+  this.staffPerHour.forEach((staffCount) => {
+    const td = document.createElement("td");
+    td.textContent = staffCount;
+    staffTr.appendChild(td);
+  });
+  table.appendChild(staffTr);
+};
+
+// Create header row
+const headerRow = document.createElement("tr");
+const locationHeader = document.createElement("th");
+locationHeader.textContent = "Location";
+headerRow.appendChild(locationHeader);
+hours.forEach((hour) => {
+  const th = document.createElement("th");
+  th.textContent = hour;
+  headerRow.appendChild(th);
+});
+const totalHeader = document.createElement("th");
+totalHeader.textContent = "Daily Location Total";
+headerRow.appendChild(totalHeader);
+table.appendChild(headerRow);
+
+const seattle = new CookieStore("Seattle", 23, 65, 6.3);
+const tokyo = new CookieStore("Tokyo", 3, 24, 1.2);
+const dubai = new CookieStore("Dubai", 11, 38, 3.7);
+const paris = new CookieStore("Paris", 20, 38, 2.3);
+const lima = new CookieStore("Lima", 2, 16, 4.6);
+
+seattle.calculateSales();
+seattle.render();
+tokyo.calculateSales();
+tokyo.render();
+dubai.calculateSales();
+dubai.render();
+paris.calculateSales();
+paris.render();
+lima.calculateSales();
+lima.render();
+
+/*
 CookieStore.prototype.calculateSales = function () {
   for (let i = 0; i < hours.length; i++) {
     // get the number of customers for this hour
@@ -118,4 +202,4 @@ seattle.render();
 tokyo.render();
 dubai.render();
 paris.render();
-lima.render();
+lima.render();*/
